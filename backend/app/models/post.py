@@ -10,8 +10,8 @@ class Post(Base):
     title = Column(String, index=True)
     content = Column(Text)
     author_id = Column(Integer, ForeignKey("users.id"))
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow())
+    updated_at = Column(DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow)
     tags = Column(String)  # Store tags as comma-separated string
 
     author = relationship("User", back_populates="posts")
