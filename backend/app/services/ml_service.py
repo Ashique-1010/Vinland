@@ -25,7 +25,7 @@ class ContentModerationService():
             new_text.append(t)
         return " ".join(new_text)
     
-    async def iscontent_allowed(self, text: Optional[str])-> str:
+    async def is_content_allowed(self, text: Optional[str])-> str:
         """
         Check if content is safe to post.
         Returns True if content is safe, False if offensive or error occurs.
