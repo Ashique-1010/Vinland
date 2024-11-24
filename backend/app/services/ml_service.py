@@ -10,11 +10,27 @@ class ContentModerationService():
         try:
             self.tokenizer = AutoTokenizer.from_pretrained(self.MODEL)
             self.model = AutoModelForSequenceClassification.from_pretrained(self.MODEL)
+            self.labels = self._load_labels()  # Load label mapping
             print("Content moderation model loaded successfully")
 
         except Exception as e:
             print(f"Error loading model: {e}")
             raise
+
+    def _load_labels(self):
+        """Load label mapping for the model."""
+        import csv
+        import urllib.request
+        labels = []
+        mapping_link = "https://raw.githubusercontent.com/cardiffnlp/tweeteval/main/datasets/offensive/mapping.txt"
+        try:
+            with urllib.request.urlopen(mapping_link) as f:
+                html = f.read().decode('utf-8').split("\n")
+                csvreader = csv.reader(html, delimiter='\t')
+                labels = [row[1] for row in csvreader if len(row) > 1]
+        except Exception as e:
+            print(f"Error loading label mapping: {e}")
+        return labels        
 
     def _preprocess(self, text: str) -> str:
         """Handle usernames and links in text."""
@@ -41,9 +57,10 @@ class ContentModerationService():
             output = self.model(**encoded_input)
             scores = output[0][0].detach().numpy()
             scores = softmax(scores)
-
-            offensive_score = scores[1]
-            return offensive_score <= 0.5
+            offensive_index = self.labels.index("offensive") if "offensive" in self.labels else 1
+            offensive_score = scores[offensive_index]
+            print("offensive score = ", offensive_score)
+            return offensive_score <= 0.8
         
         except Exception as e:
             print(f"Error in content moderation: {e}")
