@@ -9,7 +9,9 @@ class PostBase(BaseModel):
 
 
 class PostCreate(PostBase):
-    pass
+    title: str
+    content: str
+    tags: Optional[str] = None
 
 
 class PostUpdate(BaseModel):

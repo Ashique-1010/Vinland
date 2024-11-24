@@ -6,12 +6,12 @@ from app.services.ml_service import ContentModerationService, moderation_service
 from fastapi import HTTPException
 import logging
 
-content_preprocessor = moderation_service._preprocess()
-content_censor = moderation_service.is_content_allowed()
-def create_post(db: Session, post: PostCreate, author_id: int):
+content_preprocessor = moderation_service._preprocess
+content_censor = moderation_service.is_content_allowed
+async def create_post(db: Session, post: PostCreate, author_id: int):
     # Check for offensive content
     processed_content = content_preprocessor(post.content)
-    if content_censor(processed_content):
+    if not await content_censor(processed_content):
         raise HTTPException(
             status_code=400,
             detail="Post contains offensive content and cannot be published"
@@ -34,13 +34,13 @@ def get_posts(db: Session, skip: int = 0, limit: int = 10):
 def get_post(db: Session, post_id: int):
     return db.query(Post).filter(Post.id == post_id).first()
 
-def update_post(db: Session, post_id: int, post: PostUpdate):
+async def update_post(db: Session, post_id: int, post: PostUpdate):
     db_post = get_post(db, post_id)
     if not db_post:
         raise HTTPException(status_code=404, detail="Post not found")
     # Check for offensive content
     processed_content = content_preprocessor(post.content)
-    if content_censor(processed_content):
+    if not await content_censor(processed_content):
         raise HTTPException(
             status_code=400,
             detail="Post contains offensive content and cannot be published"
@@ -53,7 +53,7 @@ def update_post(db: Session, post_id: int, post: PostUpdate):
     db.refresh(db_post)
     return db_post
 
-def delete_post(db: Session, post_id: int):
+async def delete_post(db: Session, post_id: int):
     db_post = get_post(db, post_id)
     if not db_post:
         raise HTTPException(status_code=404, detail="Post not found")
