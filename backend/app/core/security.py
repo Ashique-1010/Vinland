@@ -15,7 +15,7 @@ def get_password_hash(password: str) -> str:
 def verify_token(token : str):
     return jwt.decode(
         token,
-        # settings.SECRET_KEY,
+        key=settings.SECRET_KEY,
         algorithms=[settings.ALGORITHM]
     )
 
